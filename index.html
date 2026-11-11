@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Club Parkway | Recorrido por el club</title>
+<meta name="description" content="Recorre por dentro el Club Parkway, el nuevo proyecto de Comunidad Parkway, desde la fachada hasta la terraza.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,600;1,6..96,500&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --negro: #0D0908;   /* Expresso intenso */
+    --nogal: #332217;   /* Nogal profundo */
+    --oro: #C69C6D;     /* Oro sereno */
+    --oro-claro: #D1B392; /* Oro suave */
+    --crema: #E6E1DC;    /* Piedra clara */
+    --destello: #FDC98C;  /* Brillo del oro */
+    --serif: "Bodoni Moda", "Didot", Georgia, serif;
+    --sans: "Montserrat", system-ui, sans-serif;
+    --barra: clamp(34px, 6vh, 64px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--negro); }
+  body { font-family: var(--sans); color: var(--crema); background: var(--negro); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+  /* Pelicula: el alto real lo fija el script; esto es solo un respaldo */
+  .peli { position: relative; height: 3200vh; }
+  .escenario { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--negro); isolation: isolate; }
+
+  /* Videos: uno encima del otro, el recorrido sigue el scroll */
+  .pantalla { position: absolute; inset: 0; z-index: 0; isolation: isolate; }
+  .pantalla video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--negro); }
+  .velo { position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(to top, rgba(13,9,8,.74) 0%, rgba(13,9,8,.34) 26%, rgba(13,9,8,0) 54%); }
+
+  /* Portada sobre la fachada: una cortina oscura deja leer el titulo y se abre al empezar a bajar */
+  .cortina { position: absolute; inset: 0; z-index: 4; pointer-events: none; background: radial-gradient(ellipse at 50% 72%, rgba(13,9,8,.82) 0%, rgba(13,9,8,.5) 70%); }
+  .portada {
+    position: absolute; z-index: 5; left: 0; right: 0; bottom: calc(var(--barra) + clamp(20px, 5vh, 56px));
+    display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 24px; pointer-events: none;
+    will-change: opacity, transform;
+  }
+  .ey { font-size: 11px; font-weight: 600; letter-spacing: .34em; text-transform: uppercase; color: var(--oro-claro); }
+  .portada h1 { font-family: var(--serif); font-weight: 500; line-height: .98; letter-spacing: -.015em; font-size: clamp(48px, 9vw, 132px); color: var(--crema); margin: 16px 0 24px; text-shadow: 0 4px 40px rgba(0,0,0,.5); }
+  .pista { font-size: 11px; letter-spacing: .32em; text-transform: uppercase; color: var(--oro-claro); display: inline-flex; align-items: center; gap: 12px; }
+  .pista::after { content: ""; width: 1px; height: 30px; background: var(--oro); animation: baja 2.2s ease-in-out infinite; transform-origin: top; }
+  @keyframes baja { 0%{transform:scaleY(0)} 50%{transform:scaleY(1)} 100%{transform:scaleY(0); transform-origin: bottom} }
+
+  /* Titulo de cada espacio */
+  .titulos { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+  .titulo {
+    position: absolute; left: clamp(24px, 7vw, 120px); bottom: calc(var(--barra) + clamp(28px, 8vh, 96px));
+    width: min(760px, calc(100% - 96px)); opacity: 0; visibility: hidden; will-change: opacity, transform;
+  }
+  .titulo .regla { display: block; width: 56px; height: 1px; background: var(--oro); margin-bottom: 18px; transform-origin: left; }
+  .titulo .ey { display: block; margin-bottom: 14px; }
+  .titulo h2 { font-family: var(--serif); font-weight: 500; line-height: 1; letter-spacing: -.015em; font-size: clamp(40px, 6.6vw, 100px); color: var(--crema); text-shadow: 0 3px 34px rgba(0,0,0,.55); }
+  .titulo .sub { display: block; margin-top: 14px; font-family: var(--serif); font-style: italic; font-weight: 500; font-size: clamp(17px, 2vw, 26px); color: var(--oro-claro); text-shadow: 0 2px 20px rgba(0,0,0,.6); }
+
+  /* Cierre */
+  .cierre { position: absolute; inset: 0; z-index: 12; display: grid; place-items: center; text-align: center; padding: calc(var(--barra) + 24px) 24px; opacity: 0; visibility: hidden; pointer-events: none; background: linear-gradient(to top, rgba(13,9,8,.94) 0%, rgba(51,34,23,.78) 100%); }
+  .cierre.on { pointer-events: auto; }
+  .cierre h2 { font-family: var(--serif); font-weight: 500; line-height: .96; letter-spacing: -.02em; font-size: clamp(56px, 11vw, 168px); color: var(--crema); margin: 18px 0 24px; }
+  .cierre p.lema { font-family: var(--serif); font-style: italic; font-weight: 500; font-size: clamp(18px, 2.2vw, 30px); line-height: 1.4; color: var(--oro-claro); max-width: 30ch; margin: 0 auto 36px; }
+  .volver { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 14px; padding: 16px 30px; border: 1px solid rgba(209,179,146,.6); color: var(--crema); font-size: 11px; font-weight: 600; letter-spacing: .26em; text-transform: uppercase; transition: background .3s ease, color .3s ease; }
+  .volver:hover { background: var(--oro); color: var(--negro); }
+  .volver:focus-visible { outline: 2px solid var(--destello); outline-offset: 4px; }
+
+  /* Capas de cine */
+  .vineta { position: absolute; inset: 0; z-index: 20; pointer-events: none; background: radial-gradient(ellipse at center, rgba(0,0,0,0) 56%, rgba(0,0,0,.5) 100%); }
+  .grano { position: absolute; inset: 0; z-index: 21; pointer-events: none; opacity: .08; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+  .barra { position: absolute; left: 0; right: 0; height: var(--barra); background: var(--negro); z-index: 30; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(16px, 3vw, 44px); font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: rgba(230,225,220,.7); }
+  .barra.sup { top: 0; }
+  .barra.inf { bottom: 0; }
+  .marca { font-family: var(--serif); font-size: clamp(14px, 1.6vw, 19px); letter-spacing: .02em; text-transform: none; color: var(--oro-claro); }
+  .progreso { flex: 1; height: 1px; margin: 0 clamp(14px, 3vw, 40px); background: rgba(230,225,220,.18); position: relative; }
+  .progreso i { position: absolute; left: 0; top: 0; height: 1px; width: 100%; background: var(--oro); transform: scaleX(0); transform-origin: left; }
+  .tc { font-variant-numeric: tabular-nums; min-width: 4.2em; text-align: right; }
+
+  /* Riel de pisos */
+  .riel { position: absolute; right: clamp(12px, 2vw, 30px); top: 50%; transform: translateY(-50%); z-index: 25; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; opacity: 0; pointer-events: none; transition: opacity .5s ease; }
+  .riel.on { opacity: 1; pointer-events: auto; }
+  .riel button { all: unset; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 5px 4px; color: rgba(230,225,220,.5); font-size: 11px; letter-spacing: .24em; text-transform: uppercase; transition: color .3s ease; text-shadow: 0 1px 10px rgba(0,0,0,.6); }
+  .riel button b { font-family: var(--serif); font-weight: 500; font-size: 22px; letter-spacing: 0; min-width: 18px; text-align: right; }
+  .riel button span { opacity: 0; max-width: 0; overflow: hidden; white-space: nowrap; transition: opacity .3s ease, max-width .4s ease; }
+  .riel button.act { color: var(--oro-claro); }
+  .riel button.act span { opacity: 1; max-width: 150px; }
+  .riel button:hover { color: var(--crema); }
+  .riel button:focus-visible { outline: 2px solid var(--destello); outline-offset: 2px; }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  noscript .aviso { position: fixed; inset: 0; display: grid; place-items: center; background: var(--negro); color: var(--crema); font-family: var(--serif); font-size: 24px; text-align: center; padding: 24px; z-index: 99; }
+
+  @media (max-width: 1199px) { .riel button span { display: none; } }
+  @media (max-width: 720px) {
+    .barra { font-size: 9px; letter-spacing: .2em; }
+    .titulo { width: calc(100% - 80px); }
+  }
+  @media (prefers-reduced-motion: reduce) { .pista::after { animation: none; } .grano { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="peli" id="peli">
+  <div class="escenario" id="escenario">
+    <div class="pantalla" id="pantalla"></div>
+    <div class="velo"></div>
+
+    <div class="cortina" id="cortina"></div>
+    <div class="portada" id="portada">
+      <p class="ey">Comunidad Parkway presenta</p>
+      <h1>Club Parkway</h1>
+      <p class="pista">Desliza para entrar</p>
+    </div>
+
+    <div class="titulos" id="titulos" aria-hidden="true"></div>
+
+    <div class="cierre" id="cierre">
+      <div>
+        <p class="ey">Comunidad Parkway presenta</p>
+        <h2>Club Parkway</h2>
+        <p class="lema">Un solo lugar para trabajar, crear, entrenar, descansar y celebrar.</p>
+        <button class="volver" id="volver" type="button">Volver al inicio</button>
+      </div>
+    </div>
+
+    <div class="vineta"></div>
+    <div class="grano"></div>
+
+    <div class="barra sup"><span class="marca">Club Parkway</span><span id="pisoActual">Entrada</span></div>
+    <div class="barra inf"><span>Comunidad Parkway</span><span class="progreso"><i id="progreso"></i></span><span class="tc" id="tc">00:00</span></div>
+
+    <nav class="riel" id="riel" aria-label="Pisos del club"></nav>
+  </div>
+</div>
+
+<ol class="sr" id="lista-sr"></ol>
+<noscript><div class="aviso">Activa JavaScript para recorrer el Club Parkway.</div></noscript>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- Datos: duracion de cada video (segundos), del 0 al 14 ---------- */
+  var DUR = [4.05, 5.04, 5.04, 5.04, 4.04, 8.58, 9.04, 8.04, 3.67, 4.63, 4.04, 4.04, 12.04, 4.04, 4.04];
+  var N = DUR.length, OFF = [], TOTAL = 0, i;
+  for (i = 0; i < N; i++) { OFF[i] = TOTAL; TOTAL += DUR[i]; }
+  var HOLD = 2.6; // segundos extra al final: el ultimo cuadro se queda quieto y entra el cierre
+
+  function g(v, t) { return OFF[v] + t; } // tiempo global a partir de (video, segundo)
+
+  /* Titulos: video y segundo donde aparece y desaparece cada espacio */
+  var TITULOS = [
+    { n: 'Club Parkway',       e: 'Entrada', a: g(0, 1.0),  b: g(0, 2.5) },
+    { n: 'Recepción',          e: 'Piso 1',  a: g(0, 2.9),  b: g(2, 1.3) },
+    { n: 'Auditorio',          e: 'Piso 1',  a: g(2, 2.0),  b: g(3, 5.04) },
+    { n: 'Coworking',          e: 'Piso 2',  a: g(5, 2.0),  b: g(5, 5.8) },
+    { n: 'Salas de reuniones', e: 'Piso 2',  a: g(5, 6.0),  b: g(6, 1.7) },
+    { n: 'Experience Lab',     e: 'Piso 3',  s: 'Audiovisuales', a: g(6, 3.1), b: g(6, 5.3) },
+    { n: 'Ciclorama',          e: 'Piso 3',  s: 'Estudio de producción', a: g(6, 5.6), b: g(7, 3.5) },
+    { n: 'Sala de edición',    e: 'Piso 3',  a: g(7, 3.9),  b: g(7, 6.4) },
+    { n: 'Podcast',            e: 'Piso 3',  a: g(8, 1.0),  b: g(9, 1.3) },
+    { n: 'Set de entrevistas', e: 'Piso 3',  a: g(9, 1.7),  b: g(9, 4.63) },
+    { n: 'Aula',               e: 'Piso 3',  a: g(10, 0.4), b: g(11, 1.1) },
+    { n: 'Gimnasio',           e: 'Piso 4',  s: 'Parkway Performance', a: g(12, 1.0), b: g(12, 8.5) },
+    { n: 'Vestuarios',         e: 'Piso 4',  a: g(12, 8.7), b: g(12, 10.2) },
+    { n: 'Zona húmeda',        e: 'Piso 4',  a: g(12, 10.5), b: g(13, 1.7) },
+    { n: 'Terraza',            e: 'Piso 5',  a: g(13, 2.2), b: g(14, 2.9) },
+    { n: 'Bar',                e: 'Piso 5',  a: g(14, 3.1), b: TOTAL + 1.0 }
+  ];
+
+  /* Pisos: desde que segundo empieza cada uno */
+  var PISOS = [
+    { t: 0,          num: '0', rotulo: 'Club Parkway',       barra: 'Entrada' },
+    { t: g(0, 2.6),  num: '1', rotulo: 'Recepción',      barra: 'Piso 1' },
+    { t: g(4, 2.2),  num: '2', rotulo: 'Coworking',      barra: 'Piso 2' },
+    { t: g(6, 3.0),  num: '3', rotulo: 'Experience Lab', barra: 'Piso 3' },
+    { t: g(11, 1.6), num: '4', rotulo: 'Gimnasio',       barra: 'Piso 4' },
+    { t: g(13, 2.0), num: '5', rotulo: 'Terraza',        barra: 'Piso 5' }
+  ];
+
+  /* ---------- Elementos ---------- */
+  var peli = document.getElementById('peli');
+  var pantalla = document.getElementById('pantalla');
+  var portada = document.getElementById('portada');
+  var cortina = document.getElementById('cortina');
+  var cont = document.getElementById('titulos');
+  var cierre = document.getElementById('cierre');
+  var riel = document.getElementById('riel');
+  var pisoActualEl = document.getElementById('pisoActual');
+  var progresoEl = document.getElementById('progreso');
+  var tcEl = document.getElementById('tc');
+  var listaSr = document.getElementById('lista-sr');
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function clamp(x, a, b) { return x < a ? a : (x > b ? b : x); }
+  function suave(x) { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); }
+
+  /* Videos */
+  var vids = [], url = [], cargado = [];
+  for (i = 0; i < N; i++) {
+    var v = document.createElement('video');
+    v.muted = true; v.defaultMuted = true; v.playsInline = true;
+    v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', '');
+    v.setAttribute('aria-hidden', 'true'); v.tabIndex = -1;
+    v.preload = 'auto';
+    v.poster = 'assets/film/v' + pad(i) + '.jpg';
+    v.style.zIndex = i;
+    v.style.visibility = 'hidden';
+    pantalla.appendChild(v);
+    vids.push(v); url.push('assets/film/v' + pad(i) + '.mp4'); cargado.push(false);
+  }
+
+  /* Titulos */
+  var tEls = TITULOS.map(function (t) {
+    var d = document.createElement('div');
+    d.className = 'titulo';
+    d.innerHTML = '<span class="regla"></span><span class="ey"></span><h2></h2>' + (t.s ? '<span class="sub"></span>' : '');
+    d.querySelector('.ey').textContent = t.e;
+    d.querySelector('h2').textContent = t.n;
+    if (t.s) d.querySelector('.sub').textContent = t.s;
+    d._regla = d.querySelector('.regla');
+    cont.appendChild(d);
+    var li = document.createElement('li'); li.textContent = t.n; listaSr.appendChild(li);
+    return d;
+  });
+
+  /* Riel */
+  var rBtns = PISOS.map(function (p) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-label', 'Ir a ' + p.barra + ', ' + p.rotulo);
+    b.innerHTML = '<span></span><b></b>';
+    b.querySelector('span').textContent = p.rotulo;
+    b.querySelector('b').textContent = p.num;
+    b.addEventListener('click', function () { saltar(p.t + 0.05); });
+    riel.appendChild(b);
+    return b;
+  });
+
+  /* ---------- Medidas y scroll ---------- */
+  var vh = 800, pps = 336, peliTop = 0;
+  var objetivo = 0, actual = 0, ultimo = -1, activo = -1, primerPintado = false, tocado = false;
+
+  function medir() {
+    vh = window.innerHeight || document.documentElement.clientHeight || 800;
+    pps = Math.max(vh * 0.42, 260); // pixeles de scroll por cada segundo de recorrido
+    peli.style.height = Math.round((TOTAL + HOLD) * pps + vh) + 'px';
+    peliTop = peli.getBoundingClientRect().top + window.pageYOffset;
+  }
+  function leer() {
+    var y = window.pageYOffset - peliTop;
+    objetivo = clamp(y / pps, 0, TOTAL + HOLD);
+  }
+  function saltar(t) {
+    window.scrollTo(0, Math.round(peliTop + clamp(t, 0, TOTAL + HOLD) * pps));
+  }
+
+  /* ---------- Carga perezosa de los videos ---------- */
+  function cargar(k) {
+    if (k < 0 || k >= N || cargado[k]) return;
+    cargado[k] = true;
+    vids[k].src = url[k];
+    vids[k].load();
+  }
+  function descargar(k) {
+    if (!cargado[k]) return;
+    cargado[k] = false;
+    vids[k].removeAttribute('src');
+    vids[k].load();
+  }
+  function gestionarCarga(a) {
+    for (var k = 0; k < N; k++) {
+      if (k >= a - 1 && k <= a + 2) cargar(k);
+      else if (Math.abs(k - a) > 3) descargar(k);
+    }
+  }
+
+  /* En telefonos hay que "desbloquear" cada video con un play y pausa para poder moverlo con el scroll */
+  var tactil = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  function desbloquear(v) {
+    if (!tactil || v._desb) return;
+    v._desb = true;
+    var p = v.play();
+    if (p && p.then) p.then(function () { v.pause(); }).catch(function () { v._desb = false; });
+  }
+  function alTocar() {
+    if (tocado) return;
+    tocado = true;
+    vids.forEach(function (v, k) { if (cargado[k]) desbloquear(v); });
+  }
+  ['touchstart', 'pointerdown', 'wheel', 'keydown', 'scroll'].forEach(function (e) {
+    window.addEventListener(e, alTocar, { passive: true, once: true });
+  });
+  vids.forEach(function (v) {
+    v.addEventListener('loadeddata', function () { if (tocado) desbloquear(v); });
+  });
+
+  function mover(v, t, dur) {
+    if (v.readyState < 1) return;
+    t = clamp(t, 0, dur - 0.05);
+    if (Math.abs(v.currentTime - t) > 0.017) v.currentTime = t;
+  }
+
+  /* ---------- Pintado ---------- */
+  var pisoIdx = -1, tcTxt = '';
+  function pintar(T) {
+    var Tc = Math.min(T, TOTAL - 0.001), k;
+
+    // video activo
+    var a = 0;
+    for (k = 0; k < N; k++) { if (Tc >= OFF[k]) a = k; }
+    if (a !== activo) { activo = a; gestionarCarga(a); }
+    for (k = 0; k < N; k++) {
+      vids[k].style.visibility = (k <= a && k >= a - 1) ? 'visible' : 'hidden';
+    }
+    var local = Tc - OFF[a];
+    mover(vids[a], local, DUR[a]);
+    // deja el siguiente y el anterior ya colocados, para que el corte no se note
+    if (a + 1 < N && local > DUR[a] - 1.6) mover(vids[a + 1], 0, DUR[a + 1]);
+    if (a - 1 >= 0 && local < 1.6) mover(vids[a - 1], DUR[a - 1] - 0.06, DUR[a - 1]);
+
+    // portada
+    var p = 1 - suave((T - 0.1) / 0.8);
+    portada.style.opacity = p.toFixed(3);
+    cortina.style.opacity = p.toFixed(3);
+    portada.style.transform = 'translateY(' + ((1 - p) * -26).toFixed(1) + 'px)';
+
+    // titulos
+    var F = 0.45;
+    for (k = 0; k < TITULOS.length; k++) {
+      var t = TITULOS[k], el = tEls[k];
+      var al = suave((T - t.a) / F) * suave((t.b - T) / F);
+      if (al <= 0.001) {
+        if (el._on) { el.style.visibility = 'hidden'; el.style.opacity = 0; el._on = false; }
+        continue;
+      }
+      el._on = true;
+      el.style.visibility = 'visible';
+      el.style.opacity = al.toFixed(3);
+      el.style.transform = 'translateY(' + ((1 - al) * 22).toFixed(1) + 'px)';
+      el._regla.style.transform = 'scaleX(' + al.toFixed(3) + ')';
+    }
+
+    // cierre
+    var c = suave((T - (TOTAL + 0.9)) / 1.3);
+    cierre.style.opacity = c.toFixed(3);
+    cierre.style.visibility = c > 0.001 ? 'visible' : 'hidden';
+    cierre.classList.toggle('on', c > 0.6);
+
+    // piso, riel, barra
+    var pi = 0;
+    for (k = 0; k < PISOS.length; k++) { if (T >= PISOS[k].t) pi = k; }
+    if (pi !== pisoIdx) {
+      pisoIdx = pi;
+      pisoActualEl.textContent = PISOS[pi].barra;
+      rBtns.forEach(function (b, j) {
+        b.classList.toggle('act', j === pi);
+        if (j === pi) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+      });
+    }
+    riel.classList.toggle('on', T > 0.9 && c < 0.5);
+    progresoEl.style.transform = 'scaleX(' + clamp(T / TOTAL, 0, 1).toFixed(4) + ')';
+    var s = Math.floor(Math.min(T, TOTAL));
+    var txt = pad(Math.floor(s / 60)) + ':' + pad(s % 60);
+    if (txt !== tcTxt) { tcTxt = txt; tcEl.textContent = txt; }
+  }
+
+  /* ---------- Bucle con inercia ---------- */
+  var previo = -1;
+  function bucle(now) {
+    if (ultimo < 0) ultimo = now;
+    var dt = Math.min(0.06, (now - ultimo) / 1000);
+    ultimo = now;
+    if (!isFinite(actual)) actual = objetivo;
+    var d = objetivo - actual;
+    if (Math.abs(d) > 0.0004) actual += d * (1 - Math.exp(-dt * 9)); else actual = objetivo;
+    if (!primerPintado || actual !== previo) { pintar(actual); previo = actual; primerPintado = true; }
+    requestAnimationFrame(bucle);
+  }
+
+  window.addEventListener('scroll', leer, { passive: true });
+  window.addEventListener('resize', function () {
+    var t = objetivo;
+    medir();
+    saltar(t);
+    leer();
+    actual = objetivo;
+    primerPintado = false;
+  });
+  window.addEventListener('load', function () { medir(); leer(); actual = objetivo; primerPintado = false; });
+  document.getElementById('volver').addEventListener('click', function () { saltar(0); });
+
+  medir(); leer(); actual = objetivo;
+  cargar(0); cargar(1);
+  requestAnimationFrame(bucle);
+})();
+</script>
+</body>
+</html>
